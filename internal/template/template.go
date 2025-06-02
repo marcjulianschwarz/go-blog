@@ -7,12 +7,21 @@ import (
 	"github.com/marcjulianschwarz/go-blog/internal/config"
 )
 
+type PostEntryData struct {
+	URL   string
+	Title string
+	Date  string
+}
+
+type PostListData struct {
+	Posts []PostEntryData
+}
+
 type TemplateData struct {
 	RecentCount       uint
-	AllTagsList       string
+	PostList          PostListData
 	ArchivedPostsList string
-	Header            string
-	AllPostsList      string
+	AllTagsList       string
 }
 
 type TemplateService struct {
@@ -32,11 +41,6 @@ func NewTemplateService(config *config.BlogConfig) *TemplateService {
 	}
 }
 
-func (t *TemplateService) Render(wr io.Writer, name string, data TemplateData) {
-
-	err := t.tmpl.ExecuteTemplate(wr, name, data)
-	if err != nil {
-		panic(err)
-	}
-
+func (t *TemplateService) Render(wr io.Writer, name string, data TemplateData) error {
+	return t.tmpl.ExecuteTemplate(wr, name, data)
 }
