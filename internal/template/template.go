@@ -24,6 +24,18 @@ type PostListData struct {
 	Posts []PostEntryData
 }
 
+type TagData struct {
+	URL   string
+	Color string
+	Name  string
+}
+
+type TagPageData struct {
+	Tag      TagData
+	Count    uint
+	PostList PostListData
+}
+
 type IndexData struct {
 	RecentCount       uint
 	PostList          PostListData
@@ -55,4 +67,8 @@ func (t *TemplateService) RenderIndex(wr io.Writer, data IndexData) error {
 
 func (t *TemplateService) RenderPost(wr io.Writer, data PostData) error {
 	return t.tmpl.ExecuteTemplate(wr, "post.html", data)
+}
+
+func (t *TemplateService) RenderTagPage(wr io.Writer, data TagPageData) error {
+	return t.tmpl.ExecuteTemplate(wr, "tag-page.html", data)
 }

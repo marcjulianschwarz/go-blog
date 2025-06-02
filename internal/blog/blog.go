@@ -79,6 +79,18 @@ func (b *BlogService) ReadPosts() {
 	})
 }
 
+func postsToEntries(posts []Post) []tpl.PostEntryData {
+	postEntries := make([]tpl.PostEntryData, len(posts))
+	for i, post := range posts {
+		postEntries[i] = tpl.PostEntryData{
+			URL:   post.URL,
+			Title: post.YAML.Title,
+			Date:  post.YAML.Published,
+		}
+	}
+	return postEntries
+}
+
 // Creates an index.html file in the output path and writes the
 // executed template filled with data from the current state of the index.
 func (b *BlogService) WriteIndex() error {
@@ -88,14 +100,7 @@ func (b *BlogService) WriteIndex() error {
 		return err
 	}
 
-	postEntries := make([]tpl.PostEntryData, len(b.index.Posts))
-	for i, post := range b.index.Posts {
-		postEntries[i] = tpl.PostEntryData{
-			URL:   post.URL,
-			Title: post.YAML.Title,
-			Date:  post.YAML.Published,
-		}
-	}
+	postEntries := postsToEntries(b.index.Posts)
 
 	return b.templateService.RenderIndex(file, tpl.IndexData{
 		PostList:          tpl.PostListData{Posts: postEntries},
@@ -130,10 +135,54 @@ func (b *BlogService) WritePosts() error {
 	return nil
 }
 
+func (b *BlogService) WriteTagPages() error {
+	tagMap := make(map[string][]Post)
+	for _, post := range b.index.Posts {
+		for _, tag := range post.YAML.Tags {
+			tagMap[tag] = append(tagMap[tag], post)
+		}
+	}
+
+	for tag, posts := range tagMap {
+		path := filepath.Join(b.config.OutputPath, b.config.TagsSubPath, tag)
+		err := os.MkdirAll(path, 0755)
+		if err != nil {
+			fmt.Println("could not write tag directory", err)
+			continue
+		}
+
+		file, err := os.Create(filepath.Join(path, "index.html"))
+		if err != nil {
+			fmt.Println("could not write tag page", err)
+			continue
+		}
+
+		postEntries := postsToEntries(posts)
+
+		err = b.templateService.RenderTagPage(file, tpl.TagPageData{
+			Tag: tpl.TagData{
+				URL:   tag,
+				Color: "blue",
+				Name:  tag,
+			},
+			PostList: tpl.PostListData{
+				Posts: postEntries,
+			},
+		})
+
+		if err != nil {
+			fmt.Println("could not render tag page", err)
+			continue
+		}
+	}
+	return nil
+}
+
 func Main(config config.BlogConfig) {
 	blogService := NewBlogService(&config)
 
 	blogService.ReadPosts()
+
 	err := blogService.WriteIndex()
 	if err != nil {
 		log.Fatal(err)
@@ -143,5 +192,7 @@ func Main(config config.BlogConfig) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	blogService.WriteTagPages()
 
 }
