@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gomarkdown/markdown"
 	"github.com/marcjulianschwarz/go-blog/internal/config"
+	"github.com/marcjulianschwarz/go-blog/internal/markdown"
 	tpl "github.com/marcjulianschwarz/go-blog/internal/template"
 	"github.com/marcjulianschwarz/go-blog/internal/yaml"
 )
@@ -62,7 +62,7 @@ func (b *BlogService) ReadPosts() {
 				return nil
 			}
 			post.YAML = postYAML
-			post.HTML = string(markdown.ToHTML([]byte(blogContent), nil, nil))
+			post.HTML = markdown.ToHTML(blogContent)
 
 			if post.YAML.Skip {
 				fmt.Printf("Skipping %s\n", post)
