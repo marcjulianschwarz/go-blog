@@ -7,7 +7,10 @@ import (
 )
 
 type Post struct {
+	Id      string
 	Content string
+	HTML    string
+	URL     string
 	YAML    yaml.PostYAML
 }
 

@@ -13,13 +13,21 @@ type PostEntryData struct {
 	Date  string
 }
 
+type PostData struct {
+	Title    string
+	Subtitle string
+	Date     string
+	Content  template.HTML
+}
+
 type PostListData struct {
 	Posts []PostEntryData
 }
 
-type TemplateData struct {
+type IndexData struct {
 	RecentCount       uint
 	PostList          PostListData
+	Post              PostData
 	ArchivedPostsList string
 	AllTagsList       string
 }
@@ -41,6 +49,10 @@ func NewTemplateService(config *config.BlogConfig) *TemplateService {
 	}
 }
 
-func (t *TemplateService) Render(wr io.Writer, name string, data TemplateData) error {
-	return t.tmpl.ExecuteTemplate(wr, name, data)
+func (t *TemplateService) RenderIndex(wr io.Writer, data IndexData) error {
+	return t.tmpl.ExecuteTemplate(wr, "index.html", data)
+}
+
+func (t *TemplateService) RenderPost(wr io.Writer, data PostData) error {
+	return t.tmpl.ExecuteTemplate(wr, "post.html", data)
 }

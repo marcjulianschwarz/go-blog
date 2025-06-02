@@ -2,19 +2,22 @@ package blog
 
 import (
 	"fmt"
+	"html/template"
 	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/gomarkdown/markdown"
 	"github.com/marcjulianschwarz/go-blog/internal/config"
-	"github.com/marcjulianschwarz/go-blog/internal/template"
+	tpl "github.com/marcjulianschwarz/go-blog/internal/template"
 	"github.com/marcjulianschwarz/go-blog/internal/yaml"
 )
 
 type BlogService struct {
 	config          *config.BlogConfig
-	templateService *template.TemplateService
+	templateService *tpl.TemplateService
 	index           *Index
 }
 
@@ -23,7 +26,7 @@ func NewBlogService(config *config.BlogConfig) *BlogService {
 	return &BlogService{
 		config:          config,
 		index:           NewIndex(),
-		templateService: template.NewTemplateService(config),
+		templateService: tpl.NewTemplateService(config),
 	}
 }
 
@@ -45,15 +48,21 @@ func (b *BlogService) ReadPosts() {
 				log.Fatal(readErr)
 			}
 
-			post := Post{}
-			post.Content = string(data)
+			filename := filepath.Base(path)
+			filename = strings.ReplaceAll(filename, fileExt, "")
 
-			yaml, err := yaml.GetPostYAML(post.Content)
+			post := Post{}
+			post.Id = filename
+			post.Content = string(data)
+			post.URL = b.config.PublishPath + "/" + b.config.PostsSubPath + "/" + post.Id
+
+			postYAML, _, blogContent, err := yaml.GetPostYAML(post.Content)
 			if err != nil {
 				fmt.Println("could not get post YAML, skipping post", path)
 				return nil
 			}
-			post.YAML = yaml
+			post.YAML = postYAML
+			post.HTML = string(markdown.ToHTML([]byte(blogContent), nil, nil))
 
 			if post.YAML.Skip {
 				fmt.Printf("Skipping %s\n", post)
@@ -79,21 +88,46 @@ func (b *BlogService) WriteIndex() error {
 		return err
 	}
 
-	postEntries := make([]template.PostEntryData, len(b.index.Posts))
+	postEntries := make([]tpl.PostEntryData, len(b.index.Posts))
 	for i, post := range b.index.Posts {
-		postEntries[i] = template.PostEntryData{
-			URL:   "test url",
+		postEntries[i] = tpl.PostEntryData{
+			URL:   post.URL,
 			Title: post.YAML.Title,
 			Date:  post.YAML.Published,
 		}
 	}
 
-	return b.templateService.Render(file, "index.html", template.TemplateData{
-		PostList:          template.PostListData{Posts: postEntries},
+	return b.templateService.RenderIndex(file, tpl.IndexData{
+		PostList:          tpl.PostListData{Posts: postEntries},
 		AllTagsList:       "all tags",
 		RecentCount:       0,
 		ArchivedPostsList: "all archived posts",
 	})
+}
+
+func (b *BlogService) WritePosts() error {
+	for _, post := range b.index.Posts {
+		path := filepath.Join(b.config.OutputPath, b.config.PostsSubPath, post.Id)
+		err := os.MkdirAll(path, 0755)
+		if err != nil {
+			fmt.Println("could not write post directory", err)
+			continue
+		}
+
+		file, err := os.Create(filepath.Join(path, "index.html"))
+		if err != nil {
+			fmt.Println("could not write post")
+			continue
+		}
+
+		err = b.templateService.RenderPost(file, tpl.PostData{
+			Title:    post.YAML.Title,
+			Subtitle: post.YAML.Subtitle,
+			Date:     post.YAML.Published,
+			Content:  template.HTML(post.HTML),
+		})
+	}
+	return nil
 }
 
 func Main(config config.BlogConfig) {
@@ -105,16 +139,9 @@ func Main(config config.BlogConfig) {
 		log.Fatal(err)
 	}
 
+	err = blogService.WritePosts()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }
-
-// func X() {
-// 	html := markdown.ToHTML([]byte(post.Content), nil, nil)
-// 	filename := filepath.Base(path)
-// 	htmlFilename := strings.Replace(filename, fileExt, "", -1) + ".html"
-
-// 	htmlPath := filepath.Join(config.OutputPath, config.PostsSubPath, htmlFilename)
-// 	errWrite := os.WriteFile(htmlPath, html, 0644)
-// 	if errWrite != nil {
-// 		log.Fatal("error writing")
-// 	}
-// }

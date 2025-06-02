@@ -28,13 +28,13 @@ func getFrontmatter(content string) (frontmatter string, remainingContent string
 	return strings.TrimSpace(frontmatter), strings.TrimSpace(remainingContent), true
 }
 
-func GetPostYAML(content string) (PostYAML, error) {
-	frontmatter, content, found := getFrontmatter(content)
+func GetPostYAML(content string) (postYAMl PostYAML, frontmatter string, blogContent string, err error) {
+	frontmatter, blogContent, found := getFrontmatter(content)
 	if !found {
 		fmt.Println("no frontmatter found")
 	}
 
 	postYAML := PostYAML{}
-	err := yaml.Unmarshal([]byte(frontmatter), &postYAML)
-	return postYAML, err
+	err = yaml.Unmarshal([]byte(frontmatter), &postYAML)
+	return postYAML, frontmatter, blogContent, err
 }
