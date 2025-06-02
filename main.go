@@ -10,16 +10,11 @@ import (
 
 	"github.com/gomarkdown/markdown"
 	"github.com/marcjulianschwarz/go-blog/internal/config"
+	"github.com/marcjulianschwarz/go-blog/internal/template"
 	"github.com/marcjulianschwarz/go-blog/internal/yaml"
 )
 
-func main() {
-
-	config, err := config.Get("./")
-	if err != nil {
-		log.Fatal("no config file found")
-	}
-
+func getposts(config config.BlogConfig) {
 	fileSystem := os.DirFS(config.InputPath)
 
 	fs.WalkDir(fileSystem, ".", func(path string, d fs.DirEntry, err error) error {
@@ -60,5 +55,31 @@ func main() {
 
 		return nil
 	})
+}
+
+func main() {
+
+	config, err := config.Get("./")
+	if err != nil {
+		log.Fatal("no config file found")
+	}
+
+	templateService := template.NewTemplateService(&config)
+
+	file, err := os.Create(filepath.Join(config.OutputPath, "index.html"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close() // close file after function execution
+
+	data := template.TemplateData{
+		RecentCount:       3,
+		AllTagsList:       "all tags",
+		ArchivedPostsList: "archived list",
+		Header:            "some header",
+		AllPostsList:      "posts",
+	}
+
+	templateService.Render(file, "index.html", data)
 
 }

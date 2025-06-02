@@ -13,6 +13,7 @@ type BlogConfig struct {
 	TagsSubPath  string `yaml:"tags-subpath"`
 	PostsSubPath string `yaml:"posts-subpath"`
 	MediaSubPath string `yaml:"media-subpath"`
+	TemplatePath string `yaml:"templates-path"`
 }
 
 // Get BlogConfig from config.yaml file in path directory
