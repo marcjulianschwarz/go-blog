@@ -14,7 +14,7 @@ type BlogConfig struct {
 	PostsSubPath string `yaml:"posts-subpath"`
 	MediaSubPath string `yaml:"media-subpath"`
 	TemplatePath string `yaml:"templates-path"`
-	PublishPath  string `yaml:"publish-path"`
+	PublishURL  string `yaml:"publish-url"`
 }
 
 // Get BlogConfig from config.yaml file in path directory

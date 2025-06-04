@@ -69,7 +69,7 @@ func (b *BlogService) ReadPosts() {
 			}
 
 			post.Id = filename
-			post.URL = b.config.PublishPath + "/" + b.config.PostsSubPath + "/" + post.Id
+			post.URL = b.config.PublishURL + "/" + b.config.PostsSubPath + "/" + post.Id
 			post.Title = postYAML.Title
 			post.Date = postYAML.Published
 			post.Content = blogContent
