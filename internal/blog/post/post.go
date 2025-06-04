@@ -1,4 +1,4 @@
-package blog
+package post
 
 import (
 	"fmt"
@@ -11,6 +11,8 @@ type Post struct {
 	Content string
 	HTML    string
 	URL     string
+	Title   string
+	Date    string
 	YAML    yaml.PostYAML
 }
 

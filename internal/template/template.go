@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"io"
 
+	"github.com/marcjulianschwarz/go-blog/internal/blog/post"
 	"github.com/marcjulianschwarz/go-blog/internal/config"
 )
 
@@ -21,7 +22,7 @@ type PostData struct {
 }
 
 type PostListData struct {
-	Posts []PostEntryData
+	Posts []post.Post
 }
 
 type TagData struct {

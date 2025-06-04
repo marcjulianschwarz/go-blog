@@ -1,14 +1,16 @@
 package blog
 
+import "github.com/marcjulianschwarz/go-blog/internal/blog/post"
+
 type Index struct {
-	Posts []Post
+	Posts []post.Post
 }
 
 func NewIndex() *Index {
 	return &Index{}
 }
 
-func (i *Index) AddPost(post Post) {
+func (i *Index) AddPost(post post.Post) {
 	i.Posts = append(i.Posts, post)
 }
 

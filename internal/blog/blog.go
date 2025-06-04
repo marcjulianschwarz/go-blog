@@ -9,8 +9,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/marcjulianschwarz/go-blog/internal/blog/post"
 	"github.com/marcjulianschwarz/go-blog/internal/config"
 	"github.com/marcjulianschwarz/go-blog/internal/markdown"
+	"github.com/marcjulianschwarz/go-blog/internal/sitemap"
 	tpl "github.com/marcjulianschwarz/go-blog/internal/template"
 	"github.com/marcjulianschwarz/go-blog/internal/yaml"
 )
@@ -19,14 +21,16 @@ type BlogService struct {
 	config          *config.BlogConfig
 	templateService *tpl.TemplateService
 	index           *Index
+	sitemap         *sitemap.Sitemap
 }
 
 func NewBlogService(config *config.BlogConfig) *BlogService {
 
 	return &BlogService{
 		config:          config,
-		index:           NewIndex(),
 		templateService: tpl.NewTemplateService(config),
+		index:           NewIndex(),
+		sitemap:         sitemap.NewSitemap(),
 	}
 }
 
@@ -51,23 +55,26 @@ func (b *BlogService) ReadPosts() {
 			filename := filepath.Base(path)
 			filename = strings.ReplaceAll(filename, fileExt, "")
 
-			post := Post{}
-			post.Id = filename
-			post.Content = string(data)
-			post.URL = b.config.PublishPath + "/" + b.config.PostsSubPath + "/" + post.Id
+			post := post.Post{}
 
-			postYAML, _, blogContent, err := yaml.GetPostYAML(post.Content)
+			postYAML, _, blogContent, err := yaml.GetPostYAML(string(data))
 			if err != nil {
 				fmt.Println("could not get post YAML, skipping post", path)
 				return nil
 			}
-			post.YAML = postYAML
-			post.HTML = markdown.ToHTML(blogContent)
 
 			if post.YAML.Skip {
 				fmt.Printf("Skipping %s\n", post)
 				return nil
 			}
+
+			post.Id = filename
+			post.URL = b.config.PublishPath + "/" + b.config.PostsSubPath + "/" + post.Id
+			post.Title = postYAML.Title
+			post.Date = postYAML.Published
+			post.Content = blogContent
+			post.HTML = markdown.ToHTML(blogContent)
+			post.YAML = postYAML
 
 			fmt.Printf("Adding %s\n", post)
 			b.index.AddPost(post)
@@ -79,18 +86,6 @@ func (b *BlogService) ReadPosts() {
 	})
 }
 
-func postsToEntries(posts []Post) []tpl.PostEntryData {
-	postEntries := make([]tpl.PostEntryData, len(posts))
-	for i, post := range posts {
-		postEntries[i] = tpl.PostEntryData{
-			URL:   post.URL,
-			Title: post.YAML.Title,
-			Date:  post.YAML.Published,
-		}
-	}
-	return postEntries
-}
-
 // Creates an index.html file in the output path and writes the
 // executed template filled with data from the current state of the index.
 func (b *BlogService) WriteIndex() error {
@@ -100,10 +95,8 @@ func (b *BlogService) WriteIndex() error {
 		return err
 	}
 
-	postEntries := postsToEntries(b.index.Posts)
-
 	return b.templateService.RenderIndex(file, tpl.IndexData{
-		PostList:          tpl.PostListData{Posts: postEntries},
+		PostList:          tpl.PostListData{Posts: b.index.Posts},
 		AllTagsList:       "all tags",
 		RecentCount:       0,
 		ArchivedPostsList: "all archived posts",
@@ -136,7 +129,7 @@ func (b *BlogService) WritePosts() error {
 }
 
 func (b *BlogService) WriteTagPages() error {
-	tagMap := make(map[string][]Post)
+	tagMap := make(map[string][]post.Post)
 	for _, post := range b.index.Posts {
 		for _, tag := range post.YAML.Tags {
 			tagMap[tag] = append(tagMap[tag], post)
@@ -157,8 +150,6 @@ func (b *BlogService) WriteTagPages() error {
 			continue
 		}
 
-		postEntries := postsToEntries(posts)
-
 		err = b.templateService.RenderTagPage(file, tpl.TagPageData{
 			Tag: tpl.TagData{
 				URL:   tag,
@@ -166,7 +157,7 @@ func (b *BlogService) WriteTagPages() error {
 				Name:  tag,
 			},
 			PostList: tpl.PostListData{
-				Posts: postEntries,
+				Posts: posts,
 			},
 		})
 
@@ -176,6 +167,18 @@ func (b *BlogService) WriteTagPages() error {
 		}
 	}
 	return nil
+}
+
+func (b *BlogService) WriteSitemap() {
+	for _, post := range b.index.Posts {
+		b.sitemap.UpdateSitemap(post.URL, post.YAML.Published) // TODO: use last mod
+	}
+
+	for _, tag := range b.index.Tags() {
+		b.sitemap.UpdateSitemap(tag, "")
+	}
+
+	b.sitemap.SaveSitemap(b.config.OutputPath)
 }
 
 func Main(config config.BlogConfig) {
@@ -194,5 +197,6 @@ func Main(config config.BlogConfig) {
 	}
 
 	blogService.WriteTagPages()
+	blogService.WriteSitemap()
 
 }
