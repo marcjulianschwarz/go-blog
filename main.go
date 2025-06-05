@@ -15,23 +15,4 @@ func main() {
 	}
 
 	blog.Main(config)
-
-	// templateService := template.NewTemplateService(&config)
-
-	// file, err := os.Create(filepath.Join(config.OutputPath, "index.html"))
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer file.Close() // close file after function execution
-
-	// data := template.TemplateData{
-	// 	RecentCount:       3,
-	// 	AllTagsList:       "all tags",
-	// 	ArchivedPostsList: "archived list",
-	// 	Header:            "some header",
-	// 	AllPostsList:      "posts",
-	// }
-
-	// templateService.Render(file, "index.html", data)
-
 }
