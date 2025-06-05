@@ -8,19 +8,6 @@ import (
 	"github.com/marcjulianschwarz/go-blog/internal/config"
 )
 
-type PostEntryData struct {
-	URL   string
-	Title string
-	Date  string
-}
-
-type PostData struct {
-	Title    string
-	Subtitle string
-	Date     string
-	Content  template.HTML
-}
-
 type PostListData struct {
 	Posts []post.Post
 }
@@ -40,7 +27,6 @@ type TagPageData struct {
 type IndexData struct {
 	RecentCount       uint
 	PostList          PostListData
-	Post              PostData
 	ArchivedPostsList string
 	AllTagsList       string
 }
@@ -66,7 +52,7 @@ func (t *TemplateService) RenderIndex(wr io.Writer, data IndexData) error {
 	return t.tmpl.ExecuteTemplate(wr, "index.html", data)
 }
 
-func (t *TemplateService) RenderPost(wr io.Writer, data PostData) error {
+func (t *TemplateService) RenderPost(wr io.Writer, data post.Post) error {
 	return t.tmpl.ExecuteTemplate(wr, "post.html", data)
 }
 

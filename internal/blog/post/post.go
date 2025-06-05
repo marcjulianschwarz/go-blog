@@ -2,18 +2,20 @@ package post
 
 import (
 	"fmt"
+	"html/template"
 
 	"github.com/marcjulianschwarz/go-blog/internal/yaml"
 )
 
 type Post struct {
-	Id      string
-	Content string
-	HTML    string
-	URL     string
-	Title   string
-	Date    string
-	YAML    yaml.PostYAML
+	Id       string
+	Content  string
+	HTML     template.HTML
+	URL      string
+	Title    string
+	Subtitle string
+	Date     string
+	YAML     yaml.PostYAML
 }
 
 func (p Post) String() string {

@@ -68,12 +68,15 @@ func (b *BlogService) ReadPosts() {
 				return nil
 			}
 
+			html := markdown.ToHTML(blogContent)
+
 			post.Id = filename
 			post.URL = b.config.PublishURL + "/" + b.config.PostsSubPath + "/" + post.Id
 			post.Title = postYAML.Title
+			post.Subtitle = postYAML.Subtitle
 			post.Date = postYAML.Published
 			post.Content = blogContent
-			post.HTML = markdown.ToHTML(blogContent)
+			post.HTML = template.HTML(html)
 			post.YAML = postYAML
 
 			fmt.Printf("Adding %s\n", post)
@@ -118,12 +121,7 @@ func (b *BlogService) WritePosts() error {
 			continue
 		}
 
-		err = b.templateService.RenderPost(file, tpl.PostData{
-			Title:    post.YAML.Title,
-			Subtitle: post.YAML.Subtitle,
-			Date:     post.YAML.Published,
-			Content:  template.HTML(post.HTML),
-		})
+		err = b.templateService.RenderPost(file, post)
 	}
 	return nil
 }
