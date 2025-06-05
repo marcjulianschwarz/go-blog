@@ -35,6 +35,12 @@ func NewBlogService(config *config.BlogConfig) *BlogService {
 	}
 }
 
+// WARNING: this deletes the entire output path
+// only call this when you really want to delete the blog
+func (b *BlogService) DeleteBlog() error {
+	return clearDirectory(b.config.OutputPath)
+}
+
 // Reads all markdown files from the input path. Then extracts the YAML contained
 // inside of the frontmatter. Adds a resulting post to the index or skips it when
 // needed (e.g. skip attribute set or published date in the future or includes demo tag)
@@ -72,7 +78,7 @@ func (b *BlogService) ReadPosts() {
 			html := markdown.ToHTML(blogContent)
 
 			post.Id = filename
-			post.URL = b.config.PublishURL + "/" + b.config.PostsSubPath + "/" + post.Id
+			post.URL = "/" + b.config.BlogSubPath + "/" + b.config.PostsSubPath + "/" + post.Id
 			post.Title = postYAML.Title
 			post.Subtitle = postYAML.Subtitle
 			post.Date = postYAML.Published
@@ -81,11 +87,12 @@ func (b *BlogService) ReadPosts() {
 			post.YAML = postYAML
 
 			for _, tagName := range post.YAML.Tags {
+				tagId := tag.TagNameToId(tagName)
 				post.Tags = append(post.Tags, tag.Tag{
 					Name:  tagName,
-					URL:   b.config.PublishURL + "/" + b.config.TagsSubPath + "/" + tagName,
+					URL:   "/" + b.config.BlogSubPath + "/" + b.config.TagsSubPath + "/" + tagId,
 					Color: "",
-					ID:    tagName,
+					ID:    tagId,
 				})
 			}
 
@@ -97,6 +104,10 @@ func (b *BlogService) ReadPosts() {
 
 		return nil
 	})
+}
+
+func (b *BlogService) SortPosts() {
+	b.index.SortByDate(true)
 }
 
 // Creates an index.html file in the output path and writes the
@@ -180,25 +191,4 @@ func (b *BlogService) WriteSitemap() {
 	}
 
 	b.sitemap.SaveSitemap(b.config.OutputPath)
-}
-
-func Main(config config.BlogConfig) {
-	blogService := NewBlogService(&config)
-
-	blogService.ReadPosts()
-	blogService.index.SortByDate(true)
-
-	err := blogService.WriteIndex()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = blogService.WritePosts()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	blogService.WriteTagPages()
-	blogService.WriteSitemap()
-
 }

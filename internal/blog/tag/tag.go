@@ -1,6 +1,9 @@
 package tag
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Tag struct {
 	ID    string
@@ -11,4 +14,8 @@ type Tag struct {
 
 func (t Tag) String() string {
 	return fmt.Sprintf("Tag %s", t.Name)
+}
+
+func TagNameToId(name string) (id string) {
+	return strings.ToLower(strings.ReplaceAll(name, " ", "-"))
 }
