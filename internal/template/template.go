@@ -9,19 +9,15 @@ import (
 	"github.com/marcjulianschwarz/go-blog/internal/config"
 )
 
-type PostListData struct {
-	Posts []*post.Post
-}
-
 type TagPageData struct {
-	Tag      tag.Tag
-	Count    int
-	PostList PostListData
+	Tag   tag.Tag
+	Count int
+	Posts []*post.Post
 }
 
 type IndexData struct {
 	RecentCount       uint
-	PostList          PostListData
+	Posts             []*post.Post
 	ArchivedPostsList string
 	AllTagsList       string
 }

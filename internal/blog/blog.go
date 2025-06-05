@@ -109,7 +109,7 @@ func (b *BlogService) WriteIndex() error {
 	}
 
 	return b.templateService.RenderIndex(file, tpl.IndexData{
-		PostList:          tpl.PostListData{Posts: b.index.Posts},
+		Posts:             b.index.Posts,
 		AllTagsList:       "all tags",
 		RecentCount:       0,
 		ArchivedPostsList: "all archived posts",
@@ -156,10 +156,8 @@ func (b *BlogService) WriteTagPages() error {
 		}
 
 		err = b.templateService.RenderTagPage(file, tpl.TagPageData{
-			Tag: *b.index.TagsById[tagId],
-			PostList: tpl.PostListData{
-				Posts: posts,
-			},
+			Tag:   *b.index.TagsById[tagId],
+			Posts: posts,
 			Count: len(posts),
 		})
 
