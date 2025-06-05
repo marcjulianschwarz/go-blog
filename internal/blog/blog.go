@@ -86,19 +86,32 @@ func (b *BlogService) ReadPosts() {
 			post.HTML = template.HTML(html)
 			post.YAML = postYAML
 
-			for _, tagName := range post.YAML.Tags {
+			// create tags slice with capacity to hold the tags and an additional year
+			tags := make([]tag.Tag, 0, len(postYAML.Tags)+1)
+			for _, tagName := range postYAML.Tags {
 				tagId := tag.TagNameToId(tagName)
-				post.Tags = append(post.Tags, tag.Tag{
+				tags = append(tags, tag.Tag{
 					Name:  tagName,
 					URL:   "/" + b.config.BlogSubPath + "/" + b.config.TagsSubPath + "/" + tagId,
-					Color: "",
+					Color: "tag-post",
 					ID:    tagId,
 				})
 			}
 
+			year, _, found := strings.Cut(post.Date, "-")
+			if found && len(year) == 4 {
+				tags = append(tags, tag.Tag{
+					Name:  year,
+					URL:   "/" + b.config.BlogSubPath + "/" + b.config.TagsSubPath + "/" + year,
+					Color: "tag-year",
+					ID:    year,
+				})
+			}
+
+			post.Tags = tags
+
 			// fmt.Printf("Adding %s\n", post)
 			b.index.AddPost(&post)
-
 			return nil
 		}
 

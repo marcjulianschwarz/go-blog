@@ -39,7 +39,7 @@ func (i *Index) GetAllTags() []*tag.Tag {
 	for _, tag := range i.TagsById {
 		tags = append(tags, tag)
 	}
-	return tags
+	return tag.SortTagsByName(tags, false)
 }
 
 func (i *Index) FilterBy(predicate func(*post.Post) bool) []*post.Post {
