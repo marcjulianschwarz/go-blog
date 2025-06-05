@@ -5,22 +5,17 @@ import (
 	"io"
 
 	"github.com/marcjulianschwarz/go-blog/internal/blog/post"
+	"github.com/marcjulianschwarz/go-blog/internal/blog/tag"
 	"github.com/marcjulianschwarz/go-blog/internal/config"
 )
 
 type PostListData struct {
-	Posts []post.Post
-}
-
-type TagData struct {
-	URL   string
-	Color string
-	Name  string
+	Posts []*post.Post
 }
 
 type TagPageData struct {
-	Tag      TagData
-	Count    uint
+	Tag      tag.Tag
+	Count    int
 	PostList PostListData
 }
 
@@ -52,7 +47,7 @@ func (t *TemplateService) RenderIndex(wr io.Writer, data IndexData) error {
 	return t.tmpl.ExecuteTemplate(wr, "index.html", data)
 }
 
-func (t *TemplateService) RenderPost(wr io.Writer, data post.Post) error {
+func (t *TemplateService) RenderPost(wr io.Writer, data *post.Post) error {
 	return t.tmpl.ExecuteTemplate(wr, "post.html", data)
 }
 

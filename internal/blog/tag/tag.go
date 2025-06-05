@@ -1,9 +1,12 @@
-package blog
+package tag
 
 import "fmt"
 
 type Tag struct {
-	Name string
+	ID    string
+	Name  string
+	Color string
+	URL   string
 }
 
 func (t Tag) String() string {

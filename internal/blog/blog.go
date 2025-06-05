@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/marcjulianschwarz/go-blog/internal/blog/post"
+	"github.com/marcjulianschwarz/go-blog/internal/blog/tag"
 	"github.com/marcjulianschwarz/go-blog/internal/config"
 	"github.com/marcjulianschwarz/go-blog/internal/markdown"
 	"github.com/marcjulianschwarz/go-blog/internal/sitemap"
@@ -79,8 +80,17 @@ func (b *BlogService) ReadPosts() {
 			post.HTML = template.HTML(html)
 			post.YAML = postYAML
 
+			for _, tagName := range post.YAML.Tags {
+				post.Tags = append(post.Tags, tag.Tag{
+					Name:  tagName,
+					URL:   b.config.PublishURL + "/" + b.config.TagsSubPath + "/" + tagName,
+					Color: "",
+					ID:    tagName,
+				})
+			}
+
 			fmt.Printf("Adding %s\n", post)
-			b.index.AddPost(post)
+			b.index.AddPost(&post)
 
 			return nil
 		}
@@ -126,16 +136,13 @@ func (b *BlogService) WritePosts() error {
 	return nil
 }
 
+// Creates tag pages for all tags by creating a directory with the
+// tag's name and rendering the tag page into an index.html file
+// inside of that directory
 func (b *BlogService) WriteTagPages() error {
-	tagMap := make(map[string][]post.Post)
-	for _, post := range b.index.Posts {
-		for _, tag := range post.YAML.Tags {
-			tagMap[tag] = append(tagMap[tag], post)
-		}
-	}
 
-	for tag, posts := range tagMap {
-		path := filepath.Join(b.config.OutputPath, b.config.TagsSubPath, tag)
+	for tagId, posts := range b.index.PostsByTag {
+		path := filepath.Join(b.config.OutputPath, b.config.TagsSubPath, tagId)
 		err := os.MkdirAll(path, 0755)
 		if err != nil {
 			fmt.Println("could not write tag directory", err)
@@ -149,14 +156,11 @@ func (b *BlogService) WriteTagPages() error {
 		}
 
 		err = b.templateService.RenderTagPage(file, tpl.TagPageData{
-			Tag: tpl.TagData{
-				URL:   tag,
-				Color: "blue",
-				Name:  tag,
-			},
+			Tag: *b.index.TagsById[tagId],
 			PostList: tpl.PostListData{
 				Posts: posts,
 			},
+			Count: len(posts),
 		})
 
 		if err != nil {
@@ -172,8 +176,8 @@ func (b *BlogService) WriteSitemap() {
 		b.sitemap.UpdateSitemap(post.URL, post.YAML.Published) // TODO: use last mod
 	}
 
-	for _, tag := range b.index.Tags() {
-		b.sitemap.UpdateSitemap(tag, "")
+	for _, tag := range b.index.GetAllTags() {
+		b.sitemap.UpdateSitemap(tag.URL, "")
 	}
 
 	b.sitemap.SaveSitemap(b.config.OutputPath)
