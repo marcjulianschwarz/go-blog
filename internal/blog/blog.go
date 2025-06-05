@@ -108,11 +108,12 @@ func (b *BlogService) WriteIndex() error {
 		return err
 	}
 
+	nonArchived := b.index.FilterNonArchived()
 	return b.templateService.RenderIndex(file, tpl.IndexData{
-		Posts:             b.index.Posts,
-		AllTagsList:       "all tags",
-		RecentCount:       0,
-		ArchivedPostsList: "all archived posts",
+		Posts:         nonArchived,
+		Tags:          b.index.GetAllTags(),
+		RecentCount:   0,
+		ArchivedPosts: b.index.FilterArchived(),
 	})
 }
 
@@ -185,6 +186,7 @@ func Main(config config.BlogConfig) {
 	blogService := NewBlogService(&config)
 
 	blogService.ReadPosts()
+	blogService.index.SortByDate(true)
 
 	err := blogService.WriteIndex()
 	if err != nil {

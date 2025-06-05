@@ -1,6 +1,8 @@
 package blog
 
 import (
+	"sort"
+
 	"github.com/marcjulianschwarz/go-blog/internal/blog/post"
 	"github.com/marcjulianschwarz/go-blog/internal/blog/tag"
 )
@@ -38,4 +40,35 @@ func (i *Index) GetAllTags() []*tag.Tag {
 		tags = append(tags, tag)
 	}
 	return tags
+}
+
+func (i *Index) FilterBy(predicate func(*post.Post) bool) []*post.Post {
+	filtered := make([]*post.Post, 0)
+	for _, post := range i.Posts {
+		if predicate(post) {
+			filtered = append(filtered, post)
+		}
+	}
+	return filtered
+}
+
+func (i *Index) FilterArchived() []*post.Post {
+	return i.FilterBy(func(p *post.Post) bool {
+		return p.YAML.Archived
+	})
+}
+
+func (i *Index) FilterNonArchived() []*post.Post {
+	return i.FilterBy(func(p *post.Post) bool {
+		return !p.YAML.Archived
+	})
+}
+
+func (i *Index) SortByDate(descending bool) {
+	sort.Slice(i.Posts, func(idx, jdx int) bool {
+		if descending {
+			return i.Posts[idx].Date > i.Posts[jdx].Date
+		}
+		return i.Posts[idx].Date < i.Posts[jdx].Date
+	})
 }

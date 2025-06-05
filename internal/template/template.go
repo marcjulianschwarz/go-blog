@@ -16,10 +16,10 @@ type TagPageData struct {
 }
 
 type IndexData struct {
-	RecentCount       uint
-	Posts             []*post.Post
-	ArchivedPostsList string
-	AllTagsList       string
+	RecentCount   uint
+	Posts         []*post.Post
+	Tags          []*tag.Tag
+	ArchivedPosts []*post.Post
 }
 
 type TemplateService struct {
