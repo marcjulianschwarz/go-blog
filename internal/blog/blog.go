@@ -64,8 +64,8 @@ func (b *BlogService) ReadPosts() {
 				return nil
 			}
 
-			if post.YAML.Skip {
-				fmt.Printf("Skipping %s\n", post)
+			if postYAML.Skip {
+				fmt.Printf("Skipping %s\n", filename)
 				return nil
 			}
 
@@ -89,7 +89,7 @@ func (b *BlogService) ReadPosts() {
 				})
 			}
 
-			fmt.Printf("Adding %s\n", post)
+			// fmt.Printf("Adding %s\n", post)
 			b.index.AddPost(&post)
 
 			return nil
