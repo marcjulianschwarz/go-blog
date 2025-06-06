@@ -38,7 +38,10 @@ func NewBlogService(config *config.BlogConfig) *BlogService {
 // WARNING: this deletes the entire output path
 // only call this when you really want to delete the blog
 func (b *BlogService) DeleteBlog() error {
-	return clearDirectory(b.config.OutputPath)
+	err := clearDirectory(b.config.OutputPath + "/" + b.config.PostsSubPath)
+	err = clearDirectory(b.config.OutputPath + "/" + b.config.TagsSubPath)
+	return err
+
 }
 
 // Reads all markdown files from the input path. Then extracts the YAML contained
