@@ -17,5 +17,11 @@ publish-url: "https://example.com/blog"
 ## Generate Blog
 
 ```bash
-go run .
+go run . generate
+```
+
+## Delete Blog
+
+```bash
+go run . delete
 ```
