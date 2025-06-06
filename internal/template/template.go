@@ -9,17 +9,31 @@ import (
 	"github.com/marcjulianschwarz/go-blog/internal/config"
 )
 
+type MetaData struct {
+	Title        string
+	Description  string
+	Keywords     string
+	Author       string
+	CanonicalURL string
+}
+
 type TagPageData struct {
 	Tag   tag.Tag
 	Count int
 	Posts []*post.Post
 }
 
-type IndexData struct {
+type PostPageData struct {
+	Post *post.Post
+	Meta MetaData
+}
+
+type IndexPageData struct {
 	RecentCount   uint
 	Posts         []*post.Post
 	Tags          []*tag.Tag
 	ArchivedPosts []*post.Post
+	Meta          MetaData
 }
 
 type TemplateService struct {
@@ -39,11 +53,11 @@ func NewTemplateService(config *config.BlogConfig) *TemplateService {
 	}
 }
 
-func (t *TemplateService) RenderIndex(wr io.Writer, data IndexData) error {
+func (t *TemplateService) RenderIndex(wr io.Writer, data IndexPageData) error {
 	return t.tmpl.ExecuteTemplate(wr, "index.html", data)
 }
 
-func (t *TemplateService) RenderPost(wr io.Writer, data *post.Post) error {
+func (t *TemplateService) RenderPost(wr io.Writer, data PostPageData) error {
 	return t.tmpl.ExecuteTemplate(wr, "post.html", data)
 }
 

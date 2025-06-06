@@ -14,6 +14,7 @@ type PostYAML struct {
 	Tags      []string `yaml:"blog-tags"`
 	Archived  bool     `yaml:"blog-archived"`
 	Skip      bool     `yaml:"blog-skip"`
+	Author    string   `yaml:"blog-author"`
 }
 
 func getFrontmatter(content string) (frontmatter string, remainingContent string, found bool) {

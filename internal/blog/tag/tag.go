@@ -31,3 +31,16 @@ func SortTagsByName(tags []*Tag, descending bool) []*Tag {
 	})
 	return tags
 }
+
+func TagToString(tag Tag) string {
+	return tag.Name
+}
+
+// Converts a list of tags into a comma separated string
+func TagsToString(tags []Tag) string {
+	tagStrings := make([]string, 0, len(tags))
+	for _, tag := range tags {
+		tagStrings = append(tagStrings, TagToString(tag))
+	}
+	return strings.Join(tagStrings, ",")
+}

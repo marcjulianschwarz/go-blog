@@ -82,11 +82,12 @@ func (b *BlogService) ReadPosts() {
 			html = strings.ReplaceAll(html, `src="/images/`, `src="/`+b.config.BlogSubPath+"/"+b.config.MediaSubPath+"/")
 
 			post.Id = filename
-			post.URL = "/" + b.config.BlogSubPath + "/" + b.config.PostsSubPath + "/" + post.Id
+			post.URL = "/" + b.config.BlogSubPath + "/" + b.config.PostsSubPath + "/" + post.Id + "/"
 			post.Title = postYAML.Title
 			post.Subtitle = postYAML.Subtitle
 			post.Date = postYAML.Published
 			post.Content = blogContent
+			post.Author = postYAML.Author
 			post.HTML = template.HTML(html)
 			post.YAML = postYAML
 
@@ -96,7 +97,7 @@ func (b *BlogService) ReadPosts() {
 				tagId := tag.TagNameToId(tagName)
 				tags = append(tags, tag.Tag{
 					Name:  tagName,
-					URL:   "/" + b.config.BlogSubPath + "/" + b.config.TagsSubPath + "/" + tagId,
+					URL:   "/" + b.config.BlogSubPath + "/" + b.config.TagsSubPath + "/" + tagId + "/",
 					Color: "tag-post",
 					ID:    tagId,
 				})
@@ -106,7 +107,7 @@ func (b *BlogService) ReadPosts() {
 			if found && len(year) == 4 {
 				tags = append(tags, tag.Tag{
 					Name:  year,
-					URL:   "/" + b.config.BlogSubPath + "/" + b.config.TagsSubPath + "/" + year,
+					URL:   "/" + b.config.BlogSubPath + "/" + b.config.TagsSubPath + "/" + year + "/",
 					Color: "tag-year",
 					ID:    year,
 				})
@@ -137,11 +138,18 @@ func (b *BlogService) WriteIndex() error {
 	}
 
 	nonArchived := b.index.FilterNonArchived()
-	return b.templateService.RenderIndex(file, tpl.IndexData{
+	return b.templateService.RenderIndex(file, tpl.IndexPageData{
 		Posts:         nonArchived,
 		Tags:          b.index.GetAllTags(),
 		RecentCount:   0,
 		ArchivedPosts: b.index.FilterArchived(),
+		Meta: tpl.MetaData{
+			Title:        "MJ's Blog",
+			Description:  "MJ's Blog",
+			Keywords:     "",
+			CanonicalURL: b.config.PublishURL + b.config.BlogSubPath,
+			Author:       "Marc Julian Schwarz",
+		},
 	})
 }
 
@@ -160,7 +168,16 @@ func (b *BlogService) WritePosts() error {
 			continue
 		}
 
-		err = b.templateService.RenderPost(file, post)
+		err = b.templateService.RenderPost(file, tpl.PostPageData{
+			Post: post,
+			Meta: tpl.MetaData{
+				Title:        post.Title,
+				Description:  truncateWithMinMax(post.Content, 130, 160),
+				Keywords:     tag.TagsToString(post.Tags),
+				CanonicalURL: b.config.PublishURL + post.URL,
+				Author:       post.Author,
+			},
+		})
 	}
 	return nil
 }

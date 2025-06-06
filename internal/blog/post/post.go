@@ -17,6 +17,7 @@ type Post struct {
 	Title    string
 	Subtitle string
 	Date     string
+	Author   string
 	YAML     yaml.PostYAML
 	Tags     []tag.Tag
 }

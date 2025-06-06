@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func clearDirectory(dirPath string) error {
@@ -20,4 +21,19 @@ func clearDirectory(dirPath string) error {
 	}
 
 	return nil
+}
+
+func truncateWithMinMax(s string, minLen, maxLen int) string {
+	runes := []rune(s)
+
+	if len(runes) <= maxLen || len(runes) < minLen {
+		return s
+	}
+
+	truncated := string(runes[:maxLen])
+	if lastSpace := strings.LastIndex(truncated, " "); lastSpace >= minLen {
+		return string(runes[:lastSpace])
+	}
+
+	return string(runes[:maxLen])
 }
