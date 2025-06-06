@@ -202,11 +202,11 @@ func (b *BlogService) WriteTagPages() error {
 
 func (b *BlogService) WriteSitemap() {
 	for _, post := range b.index.Posts {
-		b.sitemap.UpdateSitemap(post.URL, post.YAML.Published) // TODO: use last mod
+		b.sitemap.UpdateSitemap(b.config.PublishURL+post.URL, post.YAML.Published) // TODO: use last mod
 	}
 
 	for _, tag := range b.index.GetAllTags() {
-		b.sitemap.UpdateSitemap(tag.URL, "")
+		b.sitemap.UpdateSitemap(b.config.PublishURL+tag.URL, "")
 	}
 
 	b.sitemap.SaveSitemap(b.config.OutputPath)
