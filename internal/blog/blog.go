@@ -76,6 +76,7 @@ func (b *BlogService) ReadPosts() {
 			}
 
 			html := markdown.ToHTML(blogContent)
+			html = strings.ReplaceAll(html, `src="/images/`, `src="/`+b.config.BlogSubPath+"/"+b.config.MediaSubPath+"/")
 
 			post.Id = filename
 			post.URL = "/" + b.config.BlogSubPath + "/" + b.config.PostsSubPath + "/" + post.Id
