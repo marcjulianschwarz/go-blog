@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        {{template "meta.html"}}
+        <title>{{.Title}} - Marc Julian Schwarz Blog</title>
+    </head>
+    <body>
+        {{template "header.html"}}
+        <main class="ablogpost main-width-control">
+            <article class="post-header">
+                <div>
+                    <h1>{{.Title}}</h1>
+                    <h2>{{.Subtitle}}</h2>
+                    <p class="date">{{.Date}}</p>
+                </div>
+                {{template "tag-list.html" .Tags}}
+            </article>
+            <!-- <hr /> -->
+
+            <article class="post-content">{{.HTML}}</article>
+        </main>
+    </body>
+</html>
