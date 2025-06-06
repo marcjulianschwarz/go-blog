@@ -1,8 +1,6 @@
 package blog
 
 import (
-	"sort"
-
 	"github.com/marcjulianschwarz/go-blog/internal/blog/post"
 	"github.com/marcjulianschwarz/go-blog/internal/blog/tag"
 )
@@ -65,10 +63,5 @@ func (i *Index) FilterNonArchived() []*post.Post {
 }
 
 func (i *Index) SortByDate(descending bool) {
-	sort.Slice(i.Posts, func(idx, jdx int) bool {
-		if descending {
-			return i.Posts[idx].Date > i.Posts[jdx].Date
-		}
-		return i.Posts[idx].Date < i.Posts[jdx].Date
-	})
+	post.SortPostsByDate(i.Posts, descending)
 }

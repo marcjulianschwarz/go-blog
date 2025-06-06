@@ -3,6 +3,7 @@ package post
 import (
 	"fmt"
 	"html/template"
+	"sort"
 
 	"github.com/marcjulianschwarz/go-blog/internal/blog/tag"
 	"github.com/marcjulianschwarz/go-blog/internal/yaml"
@@ -22,4 +23,13 @@ type Post struct {
 
 func (p Post) String() string {
 	return fmt.Sprintf("Post{%s}", p.YAML.Title)
+}
+
+func SortPostsByDate(posts []*Post, descending bool) {
+	sort.Slice(posts, func(idx, jdx int) bool {
+		if descending {
+			return posts[idx].Date > posts[jdx].Date
+		}
+		return posts[idx].Date < posts[jdx].Date
+	})
 }

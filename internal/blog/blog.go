@@ -184,6 +184,8 @@ func (b *BlogService) WriteTagPages() error {
 			continue
 		}
 
+		post.SortPostsByDate(posts, true)
+
 		err = b.templateService.RenderTagPage(file, tpl.TagPageData{
 			Tag:   *b.index.TagsById[tagId],
 			Posts: posts,
